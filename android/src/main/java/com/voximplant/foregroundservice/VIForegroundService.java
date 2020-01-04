@@ -10,9 +10,27 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import static com.voximplant.foregroundservice.Constants.NOTIFICATION_CONFIG;
 
 public class VIForegroundService extends Service {
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Intent intent = new Intent(Constants.FOREGROUND_SERVICE_RECEIVER);
+        intent.putExtra(Constants.LIFE_CYCLE_ACTION, LifecycleType.ON_CREATED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(Constants.FOREGROUND_SERVICE_RECEIVER);
+        intent.putExtra(Constants.LIFE_CYCLE_ACTION, LifecycleType.ON_DESTROYED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
     @Override
     public IBinder onBind(Intent intent) {

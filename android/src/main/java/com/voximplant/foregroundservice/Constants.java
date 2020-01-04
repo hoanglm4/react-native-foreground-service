@@ -14,4 +14,7 @@ class Constants {
     static final String ERROR_SERVICE_ERROR = "ERROR_SERVICE_ERROR";
     static final String ERROR_ANDROID_VERSION = "ERROR_ANDROID_VERSION";
 
+    static final String FOREGROUND_SERVICE_RECEIVER = "com.voximplant.foregroundservice.FOREGROUND_SERVICE_RECEIVER";
+
+    static final String LIFE_CYCLE_ACTION = "com.voximplant.foregroundservice.LIFE_CYCLE_ACTION";
 }

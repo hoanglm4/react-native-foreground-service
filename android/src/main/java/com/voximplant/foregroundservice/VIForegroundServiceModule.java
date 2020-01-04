@@ -4,9 +4,14 @@
 
 package com.voximplant.foregroundservice;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -14,6 +19,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import static com.voximplant.foregroundservice.Constants.ERROR_INVALID_CONFIG;
 import static com.voximplant.foregroundservice.Constants.ERROR_SERVICE_ERROR;
@@ -26,6 +33,13 @@ public class VIForegroundServiceModule extends ReactContextBaseJavaModule {
     public VIForegroundServiceModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
+        BroadcastReceiver foregroundServiceReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                VIForegroundServiceModule.this.sendEventLifecycle(intent);
+            }
+        };
+        LocalBroadcastManager.getInstance(reactContext).registerReceiver(foregroundServiceReceiver, new IntentFilter(Constants.FOREGROUND_SERVICE_RECEIVER));
     }
 
     @Override
@@ -96,6 +110,28 @@ public class VIForegroundServiceModule extends ReactContextBaseJavaModule {
             promise.resolve(null);
         } else {
             promise.reject(ERROR_SERVICE_ERROR, "VIForegroundService: Foreground service failed to stop");
+        }
+    }
+
+    @ReactMethod
+    public void showNotification(ReadableMap notificationConfig) {
+        NotificationHelper.getInstance(getReactApplicationContext()).showNotification(getReactApplicationContext(), Arguments.toBundle(notificationConfig));
+    }
+
+    private void sendEventLifecycle(Intent intent) {
+        WritableMap params = Arguments.createMap();
+        LifecycleType type = (LifecycleType) intent.getSerializableExtra(Constants.LIFE_CYCLE_ACTION);
+        switch (type) {
+            case ON_CREATED:
+                getReactApplicationContext()
+                        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("onCreated", params);
+                break;
+            case ON_DESTROYED:
+                getReactApplicationContext()
+                        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("onDestroyed", params);
+                break;
         }
     }
 }
