@@ -92,9 +92,9 @@ export default class VIForegroundService {
         _notifHandlers.set(handler, listener);
     }
 
-    static removeEventListener() {
+    static removeEventListeners() {
         for (const [key, value] of _notifHandlers) {
-            key.remove();
+            value.remove();
         }
 
         _notifHandlers.clear();
@@ -104,5 +104,3 @@ export default class VIForegroundService {
         ForegroundServiceModule.showNotification(notificationConfig);
     }
 }
-
-
